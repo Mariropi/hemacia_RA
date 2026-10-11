@@ -1,176 +1,152 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  />
+  <title>Vaso Sanguíneo em Realidade Aumentada</title>
 
-  <title>Hemácia 3D - Realidade Aumentada</title>
-
-  <!-- Bibliotecas de realidade aumentada -->
+  <!-- Bibliotecas -->
   <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
   <script src="https://raw.githack.com/AR-js-org/AR.js/3.4.7/aframe/build/aframe-ar.js"></script>
 
   <style>
-    body {
+    html, body {
       margin: 0;
+      padding: 0;
       overflow: hidden;
       font-family: Arial, sans-serif;
+      background: #000;
     }
 
-    #cabecalho {
+    #topo {
       position: fixed;
-      top: 10px;
-      left: 5%;
-      width: 90%;
+      top: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 92%;
+      max-width: 520px;
       box-sizing: border-box;
-      padding: 12px;
-      background: rgba(12, 37, 65, 0.90);
+      padding: 10px 14px;
+      background: rgba(12, 28, 48, 0.82);
       color: white;
       text-align: center;
       border-radius: 12px;
       z-index: 10;
+      backdrop-filter: blur(3px);
     }
 
-    #cabecalho h2 {
+    #topo h1 {
       margin: 0;
-      font-size: 18px;
+      font-size: 16px;
+      line-height: 1.2;
     }
 
-    #cabecalho p {
-      margin: 6px 0 0;
-      font-size: 12px;
+    #topo p {
+      margin: 4px 0 0;
+      font-size: 11px;
+      opacity: 0.95;
     }
 
-    #informacoes {
+    #info {
       position: fixed;
-      bottom: 20px;
-      left: 5%;
-      width: 90%;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 92%;
+      max-width: 520px;
       box-sizing: border-box;
-      padding: 14px;
-      background: rgba(255, 255, 255, 0.94);
+      padding: 12px 14px;
+      background: rgba(255, 255, 255, 0.92);
       color: #17324d;
       border-radius: 12px;
       z-index: 10;
       text-align: center;
     }
 
-    #informacoes h3 {
-      margin: 0 0 7px;
-      color: #b71c1c;
+    #info h2 {
+      margin: 0 0 6px;
+      font-size: 15px;
+      color: #9d1d2b;
     }
 
-    #informacoes p {
-      margin: 5px 0;
-      font-size: 13px;
+    #info p {
+      margin: 3px 0;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    @media (max-width: 480px) {
+      #topo h1 {
+        font-size: 15px;
+      }
+
+      #topo p,
+      #info p {
+        font-size: 11px;
+      }
+
+      #info h2 {
+        font-size: 14px;
+      }
     }
   </style>
 
   <script>
-    // Criação da geometria de uma hemácia bicôncava.
-    AFRAME.registerComponent('hemacia-3d', {
+    // Cria células sanguíneas se movendo dentro do vaso
+    AFRAME.registerComponent('fluxo-sanguineo', {
       init: function () {
-        const THREE = AFRAME.THREE;
+        const quantidade = 9;
 
-        const geometry = new THREE.BufferGeometry();
-        const vertices = [];
-        const indices = [];
+        for (let i = 0; i < quantidade; i++) {
+          const celula = document.createElement('a-sphere');
 
-        const segmentos = 64;
-        const aneis = 24;
-        const raio = 0.55;
+          // posição inicial distribuída ao longo do vaso
+          const zInicial = -0.55 + i * 0.14;
+          const x = (Math.random() - 0.5) * 0.16;
+          const y = 0.16 + (Math.random() - 0.5) * 0.10;
 
-        // Superfícies superior e inferior.
-        for (let lado = 0; lado < 2; lado++) {
-          const sinal = lado === 0 ? 1 : -1;
+          celula.setAttribute('radius', '0.055');
+          celula.setAttribute('scale', '1.35 0.55 1.35');
+          celula.setAttribute('color', '#c2172f');
+          celula.setAttribute('material', 'metalness: 0.05; roughness: 0.55;');
+          celula.setAttribute('position', `${x} ${y} ${zInicial}`);
+          celula.setAttribute('animation', `
+            property: position;
+            from: ${x} ${y} -0.60;
+            to: ${x} ${y} 0.60;
+            dur: ${3500 + i * 450};
+            easing: linear;
+            loop: true;
+          `);
 
-          for (let i = 0; i <= aneis; i++) {
-            const r = raio * i / aneis;
-            const t = r / raio;
-
-            // Depressão central e bordas espessas.
-            const altura =
-              0.07 + 0.23 * Math.pow(
-                Math.sin(Math.PI * t), 2
-              );
-
-            for (let j = 0; j <= segmentos; j++) {
-              const angulo =
-                2 * Math.PI * j / segmentos;
-
-              vertices.push(
-                r * Math.cos(angulo),
-                sinal * altura,
-                r * Math.sin(angulo)
-              );
-            }
-          }
+          this.el.appendChild(celula);
         }
 
-        const porSuperficie =
-          (aneis + 1) * (segmentos + 1);
+        // algumas células extras para dar mais sensação de fluxo
+        for (let j = 0; j < 4; j++) {
+          const celula2 = document.createElement('a-sphere');
 
-        for (let lado = 0; lado < 2; lado++) {
-          const inicio = lado * porSuperficie;
+          const x2 = (Math.random() - 0.5) * 0.12;
+          const y2 = 0.16 + (Math.random() - 0.5) * 0.08;
 
-          for (let i = 0; i < aneis; i++) {
-            for (let j = 0; j < segmentos; j++) {
-              const a =
-                inicio + i * (segmentos + 1) + j;
-              const b = a + segmentos + 1;
+          celula2.setAttribute('radius', '0.045');
+          celula2.setAttribute('scale', '1.25 0.55 1.25');
+          celula2.setAttribute('color', '#d8233b');
+          celula2.setAttribute('material', 'metalness: 0.03; roughness: 0.60;');
+          celula2.setAttribute('position', `${x2} ${y2} ${-0.45 + j * 0.2}`);
+          celula2.setAttribute('animation', `
+            property: position;
+            from: ${x2} ${y2} -0.65;
+            to: ${x2} ${y2} 0.65;
+            dur: ${5200 + j * 300};
+            easing: linear;
+            loop: true;
+          `);
 
-              if (lado === 0) {
-                indices.push(a, a + 1, b);
-                indices.push(a + 1, b + 1, b);
-              } else {
-                indices.push(a, b, a + 1);
-                indices.push(a + 1, b, b + 1);
-              }
-            }
-          }
-        }
-
-        // Une as bordas das duas superfícies.
-        const borda = aneis * (segmentos + 1);
-
-        for (let j = 0; j < segmentos; j++) {
-          const a = borda + j;
-          const b = borda + j + 1;
-          const c = porSuperficie + borda + j;
-          const d = porSuperficie + borda + j + 1;
-
-          indices.push(a, c, b);
-          indices.push(b, c, d);
-        }
-
-        geometry.setAttribute(
-          'position',
-          new THREE.Float32BufferAttribute(vertices, 3)
-        );
-
-        geometry.setIndex(indices);
-        geometry.computeVertexNormals();
-
-        const material = new THREE.MeshStandardMaterial({
-          color: '#cb182e',
-          roughness: 0.48,
-          metalness: 0.05,
-          side: THREE.DoubleSide
-        });
-
-        const mesh = new THREE.Mesh(geometry, material);
-        this.el.setObject3D('mesh', mesh);
-      },
-
-      remove: function () {
-        const mesh = this.el.getObject3D('mesh');
-
-        if (mesh) {
-          mesh.geometry.dispose();
-          mesh.material.dispose();
-          this.el.removeObject3D('mesh');
+          this.el.appendChild(celula2);
         }
       }
     });
@@ -178,81 +154,95 @@
 </head>
 
 <body>
-
-  <!-- Título do aplicativo -->
-  <div id="cabecalho">
-    <h2>Hemácia em Realidade Aumentada</h2>
-    <p>Atlas Educativo de Células Sanguíneas</p>
+  <div id="topo">
+    <h1>Vaso Sanguíneo em Realidade Aumentada</h1>
+    <p>Protótipo educativo para visualização de células sanguíneas</p>
   </div>
 
-  <!-- Informações educativas -->
-  <div id="informacoes">
-    <h3>Hemácia (Eritrócito)</h3>
-    <p>
-      Célula sanguínea responsável principalmente
-      pelo transporte de oxigênio.
-    </p>
-    <p>
-      Sua forma bicôncava favorece as trocas gasosas
-      e a flexibilidade nos capilares.
-    </p>
-    <p>
-      <strong>
-        Aponte a câmera para o marcador Hiro.
-      </strong>
-    </p>
+  <div id="info">
+    <h2>Circulação Sanguínea</h2>
+    <p>As hemácias transportam oxigênio pelo corpo dentro dos vasos sanguíneos.</p>
+    <p>Este protótipo mostra o fluxo de células em um vaso de forma visual e interativa.</p>
+    <p><strong>Aponte a câmera para o marcador Hiro.</strong></p>
   </div>
 
-  <!-- Cena de realidade aumentada -->
   <a-scene
     embedded
     vr-mode-ui="enabled: false"
-    renderer="antialias: true; alpha: true"
-    arjs="sourceType: webcam; debugUIEnabled: false;">
-
+    renderer="antialias: true; alpha: true; precision: medium;"
+    arjs="sourceType: webcam; debugUIEnabled: false;"
+  >
     <!-- Iluminação -->
-    <a-entity
-      light="type: ambient; intensity: 1.2">
-    </a-entity>
+    <a-entity light="type: ambient; intensity: 1.25"></a-entity>
+    <a-entity light="type: directional; intensity: 0.85" position="1 2 1"></a-entity>
 
-    <a-entity
-      light="type: directional; intensity: 1"
-      position="1 3 2">
-    </a-entity>
-
-    <!-- Marcador Hiro -->
+    <!-- Marcador -->
     <a-marker preset="hiro">
+      <!-- Base opaca para esconder boa parte do marcador -->
+      <a-plane
+        position="0 0.02 0"
+        rotation="-90 0 0"
+        width="1.55"
+        height="1.55"
+        color="#6f0f1f"
+        material="opacity: 0.98; side: double;"
+      ></a-plane>
 
-      <!-- Hemácia tridimensional -->
-      <a-entity
-  position="0 0.12 0"
-  rotation="25 0 15"
-  scale="0.30 0.30 0.30"
-  hemacia-3d
-        animation="property: rotation;
-                   from: 25 0 15;
-                   to: 25 360 15;
-                   dur: 8000;
-                   easing: linear;
-                   loop: true;">
+      <!-- Conjunto inteiro reduzido e centralizado -->
+      <a-entity position="0 0.02 0" scale="0.58 0.58 0.58">
+        <!-- Vaso sanguíneo -->
+        <a-cylinder
+          position="0 0.16 0"
+          rotation="90 0 0"
+          radius="0.22"
+          height="1.45"
+          color="#b91d31"
+          material="opacity: 0.42; transparent: true; side: double;"
+        ></a-cylinder>
+
+        <!-- Contorno/brilho do vaso -->
+        <a-cylinder
+          position="0 0.16 0"
+          rotation="90 0 0"
+          radius="0.235"
+          height="1.46"
+          color="#e86a78"
+          material="opacity: 0.16; transparent: true; side: double;"
+        ></a-cylinder>
+
+        <!-- Tampas do vaso -->
+        <a-circle
+          position="0 0.16 -0.725"
+          rotation="0 0 0"
+          radius="0.22"
+          color="#9f1628"
+          material="opacity: 0.78;"
+        ></a-circle>
+
+        <a-circle
+          position="0 0.16 0.725"
+          rotation="180 0 0"
+          radius="0.22"
+          color="#9f1628"
+          material="opacity: 0.78;"
+        ></a-circle>
+
+        <!-- Grupo de células em movimento -->
+        <a-entity fluxo-sanguineo></a-entity>
+
+        <!-- Texto 3D pequeno -->
+        <a-text
+          value="Fluxo de hemacias"
+          position="0 0.47 0"
+          rotation="-90 0 0"
+          align="center"
+          color="#FFFFFF"
+          width="1.35"
+        ></a-text>
       </a-entity>
-
-      <!-- Nome sobre o modelo -->
-     <a-text
-  value="HEMACIA 3D"
-  position="0 0.38 0"
-  rotation="-90 0 0"
-  align="center"
-  color="#FFFFFF"
-  width="0.8">
-</a-text>
-
     </a-marker>
 
-    <!-- Câmera -->
     <a-entity camera></a-entity>
-
   </a-scene>
-
 </body>
 </html>
