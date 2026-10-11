@@ -1,427 +1,505 @@
 
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width,initial-scale=1">
 
-  <title>Circulação Sanguínea em Realidade Aumentada</title>
+<title>Circulação Sanguínea em RA</title>
 
-  <!-- Bibliotecas oficiais -->
-  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
-  <script src="https://raw.githack.com/AR-js-org/AR.js/3.4.7/aframe/build/aframe-ar.js"></script>
+<script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.7/aframe/build/aframe-ar.js"></script>
 
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      font-family: Arial, sans-serif;
-    }
+<style>
+* {
+  box-sizing: border-box;
+}
 
-    #titulo {
-      position: fixed;
-      top: 12px;
-      left: 5%;
-      width: 90%;
-      box-sizing: border-box;
-      background: rgba(14, 39, 65, 0.88);
-      color: white;
-      text-align: center;
-      padding: 12px;
-      border-radius: 12px;
-      z-index: 100;
-      pointer-events: none;
-    }
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+  background: transparent;
+}
 
-    #titulo h1 {
-      margin: 0;
-      font-size: 16px;
-    }
+#cameraTeste {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #dbe7ee;
+  z-index: 0;
+}
 
-    #titulo p {
-      margin: 5px 0 0;
-      font-size: 11px;
-    }
+#ra {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+}
 
-    #status {
-      position: fixed;
-      top: 92px;
-      left: 10%;
-      width: 80%;
-      box-sizing: border-box;
-      background: rgba(20, 45, 65, 0.88);
-      color: white;
-      text-align: center;
-      padding: 9px;
-      border-radius: 9px;
-      font-size: 12px;
-      z-index: 101;
-      pointer-events: none;
-    }
+#ra a-scene {
+  width: 100%;
+  height: 100%;
+}
 
-    #informacoes {
-      position: fixed;
-      bottom: 12px;
-      left: 5%;
-      width: 90%;
-      box-sizing: border-box;
-      padding: 12px;
-      background: rgba(255, 255, 255, 0.94);
-      color: #24394b;
-      border-radius: 12px;
-      text-align: center;
-      z-index: 100;
-      pointer-events: none;
-    }
+#topo {
+  position: fixed;
+  top: 12px;
+  left: 5%;
+  width: 90%;
+  z-index: 100;
+  background: rgba(14, 35, 57, 0.90);
+  color: white;
+  padding: 12px;
+  text-align: center;
+  border-radius: 12px;
+  pointer-events: none;
+}
 
-    #informacoes h2 {
-      margin: 0 0 6px;
-      color: #b21c39;
-      font-size: 15px;
-    }
+#topo h1 {
+  margin: 0;
+  font-size: 16px;
+}
 
-    #informacoes p {
-      margin: 4px 0;
-      font-size: 12px;
-      line-height: 1.4;
-    }
+#topo p {
+  font-size: 11px;
+  margin: 5px 0 0;
+}
 
-    @media (max-width: 400px) {
-      #titulo h1 {
-        font-size: 14px;
-      }
+#painel {
+  position: fixed;
+  bottom: 12px;
+  left: 5%;
+  width: 90%;
+  z-index: 100;
+  padding: 13px;
+  background: rgba(255,255,255,0.96);
+  border-radius: 12px;
+  color: #263849;
+  text-align: center;
+}
 
-      #informacoes p {
-        font-size: 11px;
-      }
-    }
-  </style>
+#painel h2 {
+  color: #b21e38;
+  font-size: 16px;
+  margin: 0 0 7px;
+}
 
-  <script>
-    // Componente que cria o vaso e as hemácias.
-    AFRAME.registerComponent('fluxo-sanguineo', {
+#painel p {
+  font-size: 12px;
+  line-height: 1.4;
+  margin: 6px 0;
+}
 
-      init: function () {
+#status {
+  position: fixed;
+  top: 96px;
+  left: 8%;
+  width: 84%;
+  z-index: 110;
+  padding: 10px;
+  border-radius: 9px;
+  background: rgba(13, 44, 65, 0.91);
+  color: white;
+  font-size: 12px;
+  text-align: center;
+}
 
-        const THREE = AFRAME.THREE;
+#controles {
+  position: fixed;
+  top: 145px;
+  left: 5%;
+  width: 90%;
+  z-index: 120;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
 
-        this.grupo = new THREE.Group();
-        this.celulas = [];
+button {
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  background: #146fa2;
+  color: white;
+  font-size: 13px;
+  font-weight: bold;
+}
 
-        this.el.setObject3D('mesh', this.grupo);
+button:disabled {
+  opacity: 0.5;
+}
 
-        // Materiais do vaso
-        const materialVaso = new THREE.MeshPhongMaterial({
-          color: 0xc94d60,
-          transparent: true,
-          opacity: 0.28,
-          side: THREE.DoubleSide,
-          depthWrite: false,
-          shininess: 85
-        });
-
-        // Vaso orientado horizontalmente
-        const geometriaVaso = new THREE.CylinderGeometry(
-          0.24,
-          0.24,
-          1.25,
-          48,
-          1,
-          true
-        );
-
-        geometriaVaso.rotateZ(Math.PI / 2);
-
-        const vaso = new THREE.Mesh(
-          geometriaVaso,
-          materialVaso
-        );
-
-        this.grupo.add(vaso);
-
-        // Bordas para dar espessura visual ao vaso.
-        const materialBorda = new THREE.MeshPhongMaterial({
-          color: 0xe78391,
-          shininess: 90
-        });
-
-        [-0.625, 0.625].forEach(x => {
-
-          const geometriaAnel = new THREE.TorusGeometry(
-            0.24,
-            0.012,
-            10,
-            48
-          );
-
-          const anel = new THREE.Mesh(
-            geometriaAnel,
-            materialBorda
-          );
-
-          anel.rotation.y = Math.PI / 2;
-          anel.position.x = x;
-
-          this.grupo.add(anel);
-        });
-
-        // Geometria bicôncava da hemácia.
-        const pontos = [
-          [0.000, 0.012],
-          [0.020, 0.014],
-          [0.042, 0.024],
-          [0.063, 0.042],
-          [0.075, 0.043],
-          [0.083, 0.027],
-          [0.085, 0.000],
-          [0.083, -0.027],
-          [0.075, -0.043],
-          [0.063, -0.042],
-          [0.042, -0.024],
-          [0.020, -0.014],
-          [0.000, -0.012]
-        ];
-
-        const perfil = pontos.map(p =>
-          new THREE.Vector2(p[0], p[1])
-        );
-
-        const geometriaHemacia = new THREE.LatheGeometry(
-          perfil,
-          40
-        );
-
-        const materialHemacia = new THREE.MeshPhongMaterial({
-          color: 0xce1835,
-          shininess: 65,
-          side: THREE.DoubleSide
-        });
-
-        // Criar várias hemácias.
-        const quantidade = 12;
-
-        for (let i = 0; i < quantidade; i++) {
-
-          const celula = new THREE.Mesh(
-            geometriaHemacia,
-            materialHemacia
-          );
-
-          const fase = i / quantidade;
-
-          celula.position.set(
-            -0.55 + fase * 1.10,
-            Math.sin(i * 2.1) * 0.07,
-            Math.cos(i * 1.7) * 0.07
-          );
-
-          celula.rotation.set(
-            0.5 + i * 0.15,
-            i * 0.4,
-            i * 0.2
-          );
-
-          this.grupo.add(celula);
-
-          this.celulas.push({
-            objeto: celula,
-            fase: fase,
-            indice: i,
-            velocidade: 0.14 + (i % 4) * 0.025
-          });
-        }
-
-        this.geometrias = [
-          geometriaVaso,
-          geometriaHemacia
-        ];
-
-        this.materiais = [
-          materialVaso,
-          materialBorda,
-          materialHemacia
-        ];
-      },
-
-      // Movimento contínuo das hemácias.
-      tick: function (tempo, delta) {
-
-        if (!this.celulas) return;
-
-        const dt = Math.min(delta || 0, 80) / 1000;
-
-        this.celulas.forEach(c => {
-
-          c.fase =
-            (c.fase + c.velocidade * dt) % 1;
-
-          c.objeto.position.x =
-            -0.55 + c.fase * 1.10;
-
-          c.objeto.position.y =
-            Math.sin(c.indice * 2.1 + c.fase * 5)
-            * 0.07;
-
-          c.objeto.position.z =
-            Math.cos(c.indice * 1.7 + c.fase * 4)
-            * 0.07;
-
-          c.objeto.rotation.z += dt * 0.35;
-        });
-      },
-
-      remove: function () {
-
-        if (!this.grupo) return;
-
-        this.grupo.traverse(obj => {
-          if (obj.isMesh && obj.geometry) {
-            // Geometrias compartilhadas são
-            // descartadas abaixo.
-          }
-        });
-
-        // Descartar também as geometrias dos anéis.
-        this.grupo.children.forEach(obj => {
-          if (obj.isMesh &&
-              obj.geometry.type === 'TorusGeometry') {
-            obj.geometry.dispose();
-          }
-        });
-
-        this.geometrias.forEach(g => g.dispose());
-        this.materiais.forEach(m => m.dispose());
-
-        this.el.removeObject3D('mesh');
-      }
-    });
-  </script>
+@media(max-width:400px) {
+  #topo h1 { font-size: 14px; }
+  #painel p { font-size: 11px; }
+  #controles { top: 150px; }
+}
+</style>
 </head>
 
 <body>
 
-  <!-- Cabeçalho -->
-  <div id="titulo">
-    <h1>Circulação Sanguínea em RA</h1>
-    <p>Atlas Educativo de Hematologia</p>
-  </div>
+<!-- Câmera usada no teste inicial -->
+<video id="cameraTeste"
+       autoplay
+       muted
+       playsinline>
+</video>
 
-  <!-- Status da câmera e do marcador -->
-  <div id="status" role="status">
-    Iniciando câmera...
-  </div>
+<!-- Área da realidade aumentada -->
+<div id="ra"></div>
 
-  <!-- Painel educativo -->
-  <div id="informacoes">
+<header id="topo">
+  <h1>Circulação Sanguínea em RA</h1>
+  <p>Atlas Educativo de Hematologia</p>
+</header>
 
-    <h2>Fluxo de Hemácias</h2>
+<div id="status">
+  Toque em "Testar câmera" para começar.
+</div>
 
-    <p>
-      Visualização tridimensional de um
-      vaso sanguíneo com hemácias em movimento.
-    </p>
+<div id="controles">
+  <button id="btnCamera"
+          onclick="testarCamera()">
+    1. Testar câmera
+  </button>
 
-    <p>
-      As hemácias transportam oxigênio
-      através da hemoglobina.
-    </p>
+  <button id="btnRA"
+          onclick="iniciarRA()"
+          disabled>
+    2. Iniciar RA
+  </button>
+</div>
 
-    <p>
-      <strong>
-        Aponte a câmera para o marcador Hiro.
-      </strong>
-    </p>
+<section id="painel">
+  <h2>Fluxo de Hemácias</h2>
 
-  </div>
+  <p>
+    Visualização 3D de um vaso sanguíneo
+    com hemácias em movimento.
+  </p>
 
-  <!-- Cena AR.js padrão -->
-  <a-scene
-    embedded
-    vr-mode-ui="enabled: false"
-    renderer="antialias: true; alpha: true"
-    arjs="sourceType: webcam; debugUIEnabled: false;">
+  <p>
+    As hemácias transportam oxigênio
+    por meio da hemoglobina.
+  </p>
 
-    <!-- Iluminação -->
-    <a-entity
-      light="type: ambient; intensity: 1.4">
-    </a-entity>
+  <p>
+    Representação educativa simplificada.
+  </p>
+</section>
 
-    <a-entity
-      light="type: directional; intensity: 1.1"
-      position="1 3 2">
-    </a-entity>
+<script>
+const statusEl = document.getElementById("status");
+const videoTeste = document.getElementById("cameraTeste");
 
-    <!-- Marcador Hiro -->
-    <a-marker
-      id="marcador"
-      preset="hiro"
-      emitevents="true">
+let streamTeste = null;
+let modeloRegistrado = false;
 
-      <!-- Vaso pequeno e centralizado -->
+function mensagem(texto) {
+  statusEl.textContent = texto;
+}
+
+// Etapa 1: testar a câmera sem AR.js
+async function testarCamera() {
+  mensagem("Solicitando acesso à câmera...");
+
+  if (!window.isSecureContext) {
+    mensagem("Erro: abra a página usando HTTPS.");
+    return;
+  }
+
+  if (!navigator.mediaDevices ||
+      !navigator.mediaDevices.getUserMedia) {
+    mensagem("Navegador sem suporte à câmera.");
+    return;
+  }
+
+  try {
+    streamTeste =
+      await navigator.mediaDevices.getUserMedia({
+        audio: false,
+        video: {
+          facingMode: { ideal: "environment" }
+        }
+      });
+
+    videoTeste.srcObject = streamTeste;
+    await videoTeste.play();
+
+    document.getElementById("btnRA").disabled = false;
+
+    mensagem(
+      "Câmera funcionando! Agora toque em Iniciar RA."
+    );
+
+  } catch (erro) {
+    mensagem(
+      "Falha na câmera: " + erro.name +
+      ". Confira as permissões do Chrome."
+    );
+  }
+}
+
+// Cria a geometria do vaso sanguíneo
+AFRAME.registerComponent("vaso-educativo", {
+
+  init: function() {
+    const THREE = AFRAME.THREE;
+
+    const grupo = new THREE.Group();
+    const geometrias = [];
+    const materiais = [];
+    const celulas = [];
+
+    this.el.setObject3D("mesh", grupo);
+
+    this.grupo = grupo;
+    this.geometrias = geometrias;
+    this.materiais = materiais;
+    this.celulas = celulas;
+
+    // Parede semitransparente
+    const matVaso = new THREE.MeshPhongMaterial({
+      color: 0xd14c63,
+      transparent: true,
+      opacity: 0.25,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+      shininess: 90
+    });
+
+    materiais.push(matVaso);
+
+    const geoVaso = new THREE.CylinderGeometry(
+      0.24, 0.24, 1.25, 48, 1, true
+    );
+
+    geoVaso.rotateZ(Math.PI / 2);
+    geometrias.push(geoVaso);
+
+    grupo.add(new THREE.Mesh(geoVaso, matVaso));
+
+    // Anéis nas extremidades
+    const matBorda = new THREE.MeshPhongMaterial({
+      color: 0xef899a,
+      shininess: 90
+    });
+
+    materiais.push(matBorda);
+
+    [-0.625, 0.625].forEach(x => {
+      const geo = new THREE.TorusGeometry(
+        0.24, 0.014, 8, 48
+      );
+
+      geometrias.push(geo);
+
+      const anel = new THREE.Mesh(geo, matBorda);
+      anel.position.x = x;
+      anel.rotation.y = Math.PI / 2;
+
+      grupo.add(anel);
+    });
+
+    // Perfil bicôncavo da hemácia
+    const perfil = [
+      [0.000,  0.012],
+      [0.020,  0.014],
+      [0.045,  0.026],
+      [0.066,  0.041],
+      [0.078,  0.039],
+      [0.085,  0.015],
+      [0.085, -0.015],
+      [0.078, -0.039],
+      [0.066, -0.041],
+      [0.045, -0.026],
+      [0.020, -0.014],
+      [0.000, -0.012]
+    ].map(p => new THREE.Vector2(p[0], p[1]));
+
+    const geoHemacia =
+      new THREE.LatheGeometry(perfil, 36);
+
+    geometrias.push(geoHemacia);
+
+    const matHemacia = new THREE.MeshPhongMaterial({
+      color: 0xc71935,
+      shininess: 75,
+      side: THREE.DoubleSide
+    });
+
+    materiais.push(matHemacia);
+
+    // Distribuição de 12 hemácias
+    for (let i = 0; i < 12; i++) {
+      const hemacia = new THREE.Mesh(
+        geoHemacia, matHemacia
+      );
+
+      const fase = i / 12;
+
+      hemacia.position.x = -0.55 + fase * 1.10;
+      hemacia.position.y = Math.sin(i * 2) * 0.07;
+      hemacia.position.z = Math.cos(i * 2) * 0.07;
+
+      hemacia.rotation.set(
+        0.5 + i * 0.15,
+        0.3 + i * 0.25,
+        i * 0.2
+      );
+
+      grupo.add(hemacia);
+
+      celulas.push({
+        objeto: hemacia,
+        fase: fase,
+        indice: i,
+        velocidade: 0.14 + (i % 4) * 0.025
+      });
+    }
+  },
+
+  tick: function(tempo, delta) {
+    const dt = Math.min(delta || 0, 80) / 1000;
+
+    this.celulas.forEach(c => {
+      c.fase = (c.fase + c.velocidade * dt) % 1;
+
+      c.objeto.position.x =
+        -0.55 + c.fase * 1.10;
+
+      c.objeto.position.y =
+        Math.sin(c.indice * 2 + c.fase * 5) * 0.07;
+
+      c.objeto.position.z =
+        Math.cos(c.indice * 2 + c.fase * 4) * 0.07;
+
+      c.objeto.rotation.z += dt * 0.4;
+    });
+  },
+
+  remove: function() {
+    if (!this.grupo) return;
+
+    this.geometrias.forEach(g => g.dispose());
+    this.materiais.forEach(m => m.dispose());
+
+    this.el.removeObject3D("mesh");
+  }
+});
+
+// Etapa 2: iniciar realidade aumentada
+function iniciarRA() {
+
+  if (!window.AFRAME || !AFRAME.components.arjs) {
+    mensagem(
+      "Biblioteca AR.js não carregou. " +
+      "Verifique a internet e recarregue."
+    );
+    return;
+  }
+
+  // Libera a câmera de teste antes de iniciar AR.js
+  if (streamTeste) {
+    streamTeste.getTracks().forEach(t => t.stop());
+    streamTeste = null;
+  }
+
+  videoTeste.pause();
+  videoTeste.srcObject = null;
+  videoTeste.style.display = "none";
+
+  document.getElementById("controles").style.display =
+    "none";
+
+  mensagem("Iniciando realidade aumentada...");
+
+  const area = document.getElementById("ra");
+
+  area.innerHTML = `
+    <a-scene
+      embedded
+      vr-mode-ui="enabled: false"
+      renderer="antialias: true; alpha: true"
+      arjs="sourceType: webcam; debugUIEnabled: false;">
+
       <a-entity
-        fluxo-sanguineo
-        position="0 0.22 0"
-        rotation="0 -20 0"
-        scale="0.35 0.35 0.35">
+        light="type: ambient; intensity: 1.3">
       </a-entity>
 
-    </a-marker>
+      <a-entity
+        light="type: directional; intensity: 1"
+        position="1 3 2">
+      </a-entity>
 
-    <!-- Câmera AR -->
-    <a-entity camera></a-entity>
+      <a-marker
+        id="hiro"
+        preset="hiro"
+        emitevents="true">
 
-  </a-scene>
+        <a-entity
+          vaso-educativo
+          position="0 0.18 0"
+          rotation="0 -20 0"
+          scale="0.35 0.35 0.35">
+        </a-entity>
 
-  <script>
-    const status = document.getElementById('status');
-    const marcador = document.getElementById('marcador');
+      </a-marker>
 
-    marcador.addEventListener('markerFound', () => {
-      status.textContent =
-        'Marcador detectado! Hemácias em movimento.';
-    });
+      <a-entity camera></a-entity>
 
-    marcador.addEventListener('markerLost', () => {
-      status.textContent =
-        'Aponte a câmera para o marcador Hiro.';
-    });
+    </a-scene>
+  `;
 
-    // Verificação básica da câmera.
-    window.addEventListener('load', () => {
+  const marcador = document.getElementById("hiro");
 
-      if (!window.isSecureContext) {
-        status.textContent =
-          'Abra o aplicativo pelo endereço HTTPS.';
-        return;
-      }
+  marcador.addEventListener("markerFound", () => {
+    mensagem("Marcador detectado! Observe o vaso.");
+  });
 
-      if (!navigator.mediaDevices ||
-          !navigator.mediaDevices.getUserMedia) {
-        status.textContent =
-          'Este navegador não oferece acesso à câmera.';
-        return;
-      }
+  marcador.addEventListener("markerLost", () => {
+    mensagem("Aponte a câmera para o marcador Hiro.");
+  });
 
-      setTimeout(() => {
-        const video = document.querySelector('video');
+  // Diagnóstico se o vídeo da RA não carregar
+  setTimeout(() => {
+    const videos = [...document.querySelectorAll("video")];
+    const ativo = videos.some(v =>
+      v !== videoTeste &&
+      v.readyState >= 2 &&
+      v.videoWidth > 0
+    );
 
-        if (!video || video.readyState < 2) {
-          status.textContent =
-            'Câmera não iniciada. Confira a permissão e recarregue.';
-        } else {
-          if (!marcador.object3D.visible) {
-            status.textContent =
-              'Câmera ativa. Aponte para o marcador Hiro.';
-          }
-        }
-      }, 12000);
-    });
-  </script>
+    if (!ativo) {
+      mensagem(
+        "A câmera da RA pode não ter iniciado. " +
+        "Recarregue a página e confira as permissões."
+      );
+    } else if (!marcador.object3D.visible) {
+      mensagem(
+        "Câmera ativa. Aponte para o marcador Hiro."
+      );
+    }
+  }, 12000);
+}
 
+// Diagnóstico de erros de scripts
+window.addEventListener("error", evento => {
+  if (evento.target &&
+      evento.target.tagName === "SCRIPT") {
+    mensagem(
+      "Erro ao carregar biblioteca externa. " +
+      "Verifique a conexão com a internet."
+    );
+  }
+}, true);
+
+</script>
 </body>
 </html>
