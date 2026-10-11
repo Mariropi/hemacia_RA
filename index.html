@@ -19,9 +19,29 @@
       background: transparent;
     }
 
-    /* Corrige o zoom e esticamento da câmera no celular */
+    /* Responsividade total da câmera (evita zoom e distorção em retrato/paisagem) */
+    .arjs-loader {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 99999;
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      color: white;
+      font-family: sans-serif;
+    }
+
     video {
+      position: absolute !important;
+      top: 50% !important;
+      left: 50% !important;
+      transform: translate(-50%, -50%) !important;
+      width: 100vw !important;
+      height: 100vh !important;
       object-fit: cover !important;
+      z-index: 0;
     }
 
     #titulo, #informacao, #status {
@@ -200,32 +220,36 @@
 
 <body>
 
+  <div class="arjs-loader">
+    <div>A carregar a câmara e os elementos...</div>
+  </div>
+
   <div id="titulo">
     Circulação Sanguínea em Realidade Aumentada
   </div>
 
   <div id="status">
-    Iniciando câmera. Aponte para o marcador Hiro.
+    A iniciar câmara. Aponte para o marcador Hiro.
   </div>
 
   <div id="informacao">
     <strong>Fluxo de Hemácias</strong>
-    Observe as células vermelhas transportadoras de oxigênio em movimento no vaso sanguíneo.
+    Observe as células vermelhas transportadoras de oxigénio em movimento no vaso sanguíneo.
   </div>
 
   <a-scene
     embedded
-    vr-mode-ui="enabled: false"
+    vr-model-ui="enabled: false"
     device-orientation-permission-ui="enabled: false"
     renderer="antialias: true; alpha: true"
-    arjs="sourceType: webcam; debugUIEnabled: false; sourceWidth: 1280; sourceHeight: 720; displayWidth: 1280; displayHeight: 720;">
+    arjs="sourceType: webcam; debugUIEnabled: false;">
 
     <a-entity light="type: ambient; intensity: 1.5"></a-entity>
     <a-entity light="type: directional; intensity: 1" position="1 3 2"></a-entity>
 
-    <!-- Marcador Hiro com o vaso sanguíneo ajustado -->
+    <!-- Marcador Hiro com escala reduzida para caber perfeitamente -->
     <a-marker id="hiro" preset="hiro" emitevents="true">
-      <a-entity fluxo-sanguineo position="0 0.5 0" rotation="0 0 0" scale="1.5 1.5 1.5"></a-entity>
+      <a-entity fluxo-sanguineo position="0 0.2 0" rotation="0 0 0" scale="0.6 0.6 0.6"></a-entity>
     </a-marker>
 
     <a-entity camera></a-entity>
@@ -240,7 +264,7 @@
     });
 
     marcador.addEventListener("markerLost", function () {
-      statusEl.textContent = "Aponte a câmera para o marcador Hiro.";
+      statusEl.textContent = "Aponte a câmara para o marcador Hiro.";
     });
 
     window.addEventListener("orientationchange", function () {
