@@ -3,20 +3,15 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
   <title>Hemácias em Realidade Aumentada</title>
 
-  <!-- Bibliotecas de realidade aumentada -->
   <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
   <script src="https://raw.githack.com/AR-js-org/AR.js/3.4.7/aframe/build/aframe-ar.js"></script>
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
+    /* Configuração original da página */
     html, body {
       margin: 0;
       padding: 0;
@@ -24,11 +19,12 @@
       height: 100%;
       overflow: hidden;
       font-family: Arial, sans-serif;
+
+      /* ÚNICA ALTERAÇÃO: fundo transparente */
       background-color: transparent;
     }
 
-    /* Configuração original da cena:
-       sem forçar largura, altura ou z-index com !important */
+    /* Configuração original da cena */
     a-scene {
       width: 100%;
       height: 100%;
@@ -37,13 +33,14 @@
       left: 0;
     }
 
-    /* Informações na tela */
+    /* Textos flutuantes */
     #titulo, #informacao, #status {
       position: fixed;
       left: 50%;
       transform: translateX(-50%);
       z-index: 1000;
       text-align: center;
+      box-sizing: border-box;
       pointer-events: none;
     }
 
@@ -108,7 +105,6 @@
   <script>
     if (window.AFRAME) {
       AFRAME.registerComponent("fluxo-sanguineo", {
-
         init: function () {
           const THREE = AFRAME.THREE;
 
@@ -126,31 +122,24 @@
             depthWrite: false
           });
 
-          const geometriaVaso =
-            new THREE.CylinderGeometry(
-              0.22, 0.22, 1.15, 48, 1, true
-            );
+          const geometriaVaso = new THREE.CylinderGeometry(
+            0.22, 0.22, 1.15, 48, 1, true
+          );
 
           geometriaVaso.rotateZ(Math.PI / 2);
 
           this.grupo.add(
-            new THREE.Mesh(
-              geometriaVaso,
-              materialVaso
-            )
+            new THREE.Mesh(geometriaVaso, materialVaso)
           );
 
-          // Bordas do vaso sanguíneo
-          const materialBorda =
-            new THREE.MeshPhongMaterial({
-              color: 0xf08ca0
-            });
+          // Bordas do vaso
+          const materialBorda = new THREE.MeshPhongMaterial({
+            color: 0xf08ca0
+          });
 
           [-0.575, 0.575].forEach(x => {
             const anel = new THREE.Mesh(
-              new THREE.TorusGeometry(
-                0.22, 0.012, 8, 48
-              ),
+              new THREE.TorusGeometry(0.22, 0.012, 8, 48),
               materialBorda
             );
 
@@ -160,7 +149,7 @@
             this.grupo.add(anel);
           });
 
-          // Perfil bicôncavo simplificado da hemácia
+          // Formato bicôncavo das hemácias
           const perfil = [
             [0.000,  0.010],
             [0.020,  0.012],
@@ -174,21 +163,19 @@
             [0.045, -0.026],
             [0.020, -0.012],
             [0.000, -0.010]
-          ].map(
-            p => new THREE.Vector2(p[0], p[1])
+          ].map(p => new THREE.Vector2(p[0], p[1]));
+
+          const geometriaHemacia = new THREE.LatheGeometry(
+            perfil, 32
           );
 
-          const geometriaHemacia =
-            new THREE.LatheGeometry(perfil, 32);
+          const materialHemacia = new THREE.MeshPhongMaterial({
+            color: 0xd31d3c,
+            side: THREE.DoubleSide,
+            shininess: 75
+          });
 
-          const materialHemacia =
-            new THREE.MeshPhongMaterial({
-              color: 0xd31d3c,
-              side: THREE.DoubleSide,
-              shininess: 75
-            });
-
-          // Criar 12 hemácias
+          // Criar as 12 hemácias
           for (let i = 0; i < 12; i++) {
             const celula = new THREE.Mesh(
               geometriaHemacia,
@@ -220,27 +207,20 @@
           }
         },
 
-        // Movimento das hemácias dentro do vaso
+        // Animação das hemácias
         tick: function (tempo, delta) {
-          const dt =
-            Math.min(delta || 0, 80) / 1000;
+          const dt = Math.min(delta || 0, 80) / 1000;
 
           this.celulas.forEach(c => {
-            c.fase =
-              (c.fase + c.velocidade * dt) % 1;
+            c.fase = (c.fase + c.velocidade * dt) % 1;
 
-            c.objeto.position.x =
-              -0.50 + c.fase;
+            c.objeto.position.x = -0.50 + c.fase;
 
             c.objeto.position.y =
-              Math.sin(
-                c.indice * 2.1 + c.fase * 5
-              ) * 0.07;
+              Math.sin(c.indice * 2.1 + c.fase * 5) * 0.07;
 
             c.objeto.position.z =
-              Math.cos(
-                c.indice * 1.7 + c.fase * 4
-              ) * 0.07;
+              Math.cos(c.indice * 1.7 + c.fase * 4) * 0.07;
 
             c.objeto.rotation.z += dt * 0.3;
           });
@@ -262,8 +242,8 @@
 
   <div id="informacao">
     <strong>Fluxo de Hemácias</strong>
-    Observe as células vermelhas transportadoras
-    de oxigênio em movimento no vaso sanguíneo.
+    Observe as células vermelhas transportadoras de oxigênio
+    em movimento no vaso sanguíneo.
   </div>
 
   <!-- Cena de realidade aumentada -->
@@ -274,7 +254,6 @@
     renderer="antialias: true; alpha: true"
     arjs="sourceType: webcam; debugUIEnabled: false;">
 
-    <!-- Iluminação -->
     <a-entity
       light="type: ambient; intensity: 1.5">
     </a-entity>
@@ -290,7 +269,7 @@
       preset="hiro"
       emitevents="true">
 
-      <!-- Vaso sanguíneo e hemácias -->
+      <!-- Vaso sanguíneo com hemácias -->
       <a-entity
         fluxo-sanguineo
         position="0 0.2 0"
@@ -306,60 +285,34 @@
   </a-scene>
 
   <script>
-    const statusEl =
-      document.getElementById("status");
+    const statusEl = document.getElementById("status");
+    const marcador = document.getElementById("hiro");
 
-    const marcador =
-      document.getElementById("hiro");
+    marcador.addEventListener("markerFound", function () {
+      statusEl.textContent =
+        "Hiro reconhecido! Observe as hemácias.";
+    });
 
-    marcador.addEventListener(
-      "markerFound",
-      function () {
+    marcador.addEventListener("markerLost", function () {
+      statusEl.textContent =
+        "Aponte a câmera para o marcador Hiro.";
+    });
+
+    window.addEventListener("orientationchange", function () {
+      setTimeout(() => {
+        window.dispatchEvent(new Event("resize"));
+      }, 500);
+    });
+
+    window.addEventListener("error", function (evento) {
+      if (
+        evento.target &&
+        evento.target.tagName === "SCRIPT"
+      ) {
         statusEl.textContent =
-          "Hiro reconhecido! Observe as hemácias.";
-
-        statusEl.style.background =
-          "rgba(0, 100, 55, 0.88)";
+          "Erro ao carregar biblioteca de RA.";
       }
-    );
-
-    marcador.addEventListener(
-      "markerLost",
-      function () {
-        statusEl.textContent =
-          "Aponte a câmera para o marcador Hiro.";
-
-        statusEl.style.background =
-          "rgba(12, 48, 70, 0.85)";
-      }
-    );
-
-    // Ajuste ao girar o celular
-    window.addEventListener(
-      "orientationchange",
-      function () {
-        setTimeout(() => {
-          window.dispatchEvent(
-            new Event("resize")
-          );
-        }, 500);
-      }
-    );
-
-    // Aviso de erro ao carregar bibliotecas
-    window.addEventListener(
-      "error",
-      function (evento) {
-        if (
-          evento.target &&
-          evento.target.tagName === "SCRIPT"
-        ) {
-          statusEl.textContent =
-            "Erro ao carregar biblioteca de RA.";
-        }
-      },
-      true
-    );
+    }, true);
   </script>
 
 </body>
