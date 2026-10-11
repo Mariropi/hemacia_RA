@@ -19,6 +19,11 @@
       background: transparent;
     }
 
+    /* Corrige o zoom e esticamento da câmera no celular */
+    video {
+      object-fit: cover !important;
+    }
+
     #titulo, #informacao, #status {
       position: fixed;
       left: 50%;
@@ -213,17 +218,13 @@
     vr-mode-ui="enabled: false"
     device-orientation-permission-ui="enabled: false"
     renderer="antialias: true; alpha: true"
-    arjs="sourceType: webcam; debugUIEnabled: false; sourceWidth: 640; sourceHeight: 480; displayWidth: 640; displayHeight: 480;">
+    arjs="sourceType: webcam; debugUIEnabled: false; sourceWidth: 1280; sourceHeight: 720; displayWidth: 1280; displayHeight: 720;">
 
     <a-entity light="type: ambient; intensity: 1.5"></a-entity>
     <a-entity light="type: directional; intensity: 1" position="1 3 2"></a-entity>
 
-    <!-- Marcador Hiro Único e Corrigido -->
+    <!-- Marcador Hiro (Apenas o vaso com hemácias) -->
     <a-marker id="hiro" preset="hiro" emitevents="true">
-      <!-- Cubo verde de teste -->
-      <a-box position="0 0.5 0" width="0.3" height="0.3" depth="0.3" color="#00FF00"></a-box>
-
-      <!-- Vaso sanguíneo com hemácias -->
       <a-entity fluxo-sanguineo position="0 0.12 0" rotation="0 0 0" scale="0.30 0.30 0.30"></a-entity>
     </a-marker>
 
