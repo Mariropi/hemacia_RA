@@ -397,13 +397,27 @@ AFRAME.registerComponent("vaso-educativo", {
 // Etapa 2: iniciar realidade aumentada
 function iniciarRA() {
 
-  if (!window.AFRAME || !AFRAME.components.arjs) {
+
+if (
+  !window.AFRAME ||
+  !AFRAME.components ||
+  !AFRAME.components.arjs
+) {
+  if (!window.AFRAME) {
+    mensagem("Erro: biblioteca A-Frame não carregou.");
+    return;
+  }
+
+  // O AR.js pode registrar o sistema,
+  // sem registrar um componente chamado arjs.
+  if (!AFRAME.systems || !AFRAME.systems.arjs) {
     mensagem(
-      "Biblioteca AR.js não carregou. " +
-      "Verifique a internet e recarregue."
+      "AR.js ainda não está disponível. " +
+      "Verifique o carregamento do script."
     );
     return;
   }
+}
 
   // Libera a câmera de teste antes de iniciar AR.js
   if (streamTeste) {
