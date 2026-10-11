@@ -10,40 +10,27 @@
   <script src="https://raw.githack.com/AR-js-org/AR.js/3.4.7/aframe/build/aframe-ar.js"></script>
 
   <style>
+    /* Garante que a página ocupe a tela inteira sem margens ou rolagens */
     html, body {
       margin: 0;
+      padding: 0;
       width: 100%;
       height: 100%;
       overflow: hidden;
       font-family: Arial, sans-serif;
-      background: transparent;
+      background-color: #000;
     }
 
-    /* Responsividade total da câmera (evita zoom e distorção em retrato/paisagem) */
-    .arjs-loader {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 99999;
+    /* Estilo padrão para forçar o vídeo do AR.js a cobrir todo o fundo corretamente */
+    a-scene {
+      width: 100%;
+      height: 100%;
       position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background-color: rgba(0, 0, 0, 0.8);
-      color: white;
-      font-family: sans-serif;
+      top: 0;
+      left: 0;
     }
 
-    video {
-      position: absolute !important;
-      top: 50% !important;
-      left: 50% !important;
-      transform: translate(-50%, -50%) !important;
-      width: 100vw !important;
-      height: 100vh !important;
-      object-fit: cover !important;
-      z-index: 0;
-    }
-
+    /* Estilos das caixas de texto flutuantes na tela */
     #titulo, #informacao, #status {
       position: fixed;
       left: 50%;
@@ -55,7 +42,7 @@
     }
 
     #titulo {
-      top: max(6px, env(safe-area-inset-top));
+      top: max(8px, env(safe-area-inset-top));
       width: min(94%, 520px);
       padding: 9px;
       border-radius: 10px;
@@ -66,7 +53,7 @@
     }
 
     #status {
-      top: 57px;
+      top: 60px;
       width: min(92%, 500px);
       padding: 7px;
       border-radius: 8px;
@@ -76,7 +63,7 @@
     }
 
     #informacao {
-      bottom: max(6px, env(safe-area-inset-bottom));
+      bottom: max(8px, env(safe-area-inset-bottom));
       width: min(94%, 520px);
       padding: 9px;
       border-radius: 10px;
@@ -94,18 +81,18 @@
 
     @media (orientation: landscape) {
       #titulo {
-        top: 3px;
+        top: 4px;
         padding: 5px;
         font-size: 12px;
       }
 
       #status {
-        top: 35px;
+        top: 36px;
         padding: 4px;
       }
 
       #informacao {
-        bottom: 3px;
+        bottom: 4px;
         padding: 5px;
         font-size: 10px;
       }
@@ -220,26 +207,22 @@
 
 <body>
 
-  <div class="arjs-loader">
-    <div>A carregar a câmara e os elementos...</div>
-  </div>
-
   <div id="titulo">
     Circulação Sanguínea em Realidade Aumentada
   </div>
 
   <div id="status">
-    A iniciar câmara. Aponte para o marcador Hiro.
+    Iniciando câmera. Aponte para o marcador Hiro.
   </div>
 
   <div id="informacao">
     <strong>Fluxo de Hemácias</strong>
-    Observe as células vermelhas transportadoras de oxigénio em movimento no vaso sanguíneo.
+    Observe as células vermelhas transportadoras de oxigênio em movimento no vaso sanguíneo.
   </div>
 
   <a-scene
     embedded
-    vr-model-ui="enabled: false"
+    vr-mode-ui="enabled: false"
     device-orientation-permission-ui="enabled: false"
     renderer="antialias: true; alpha: true"
     arjs="sourceType: webcam; debugUIEnabled: false;">
@@ -247,7 +230,7 @@
     <a-entity light="type: ambient; intensity: 1.5"></a-entity>
     <a-entity light="type: directional; intensity: 1" position="1 3 2"></a-entity>
 
-    <!-- Marcador Hiro com escala reduzida para caber perfeitamente -->
+    <!-- Marcador Hiro com o vaso sanguíneo com tamanho ajustado -->
     <a-marker id="hiro" preset="hiro" emitevents="true">
       <a-entity fluxo-sanguineo position="0 0.2 0" rotation="0 0 0" scale="0.6 0.6 0.6"></a-entity>
     </a-marker>
@@ -264,7 +247,7 @@
     });
 
     marcador.addEventListener("markerLost", function () {
-      statusEl.textContent = "Aponte a câmara para o marcador Hiro.";
+      statusEl.textContent = "Aponte a câmera para o marcador Hiro.";
     });
 
     window.addEventListener("orientationchange", function () {
