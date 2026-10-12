@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -11,7 +10,6 @@
   <script src="https://raw.githack.com/AR-js-org/AR.js/3.4.7/aframe/build/aframe-ar.js"></script>
 
   <style>
-    /* Configuração original da página */
     html, body {
       margin: 0;
       padding: 0;
@@ -19,12 +17,9 @@
       height: 100%;
       overflow: hidden;
       font-family: Arial, sans-serif;
-
-      /* ÚNICA ALTERAÇÃO: fundo transparente */
-      background-color: transparent;
+      background-color: #000;
     }
 
-    /* Configuração original da cena */
     a-scene {
       width: 100%;
       height: 100%;
@@ -33,7 +28,6 @@
       left: 0;
     }
 
-    /* Textos flutuantes */
     #titulo, #informacao, #status {
       position: fixed;
       left: 50%;
@@ -68,18 +62,30 @@
     #informacao {
       bottom: max(8px, env(safe-area-inset-bottom));
       width: min(94%, 520px);
-      padding: 9px;
+      padding: 10px;
       border-radius: 10px;
-      background: rgba(255, 255, 255, 0.93);
+      background: rgba(255, 255, 255, 0.95);
       color: #263849;
       font-size: 11px;
+      line-height: 1.3;
+      text-align: left;
     }
 
     #informacao strong {
       display: block;
       color: #a51d39;
-      margin-bottom: 4px;
+      margin-bottom: 3px;
       font-size: 13px;
+      text-align: center;
+    }
+
+    #informacao .tech {
+      margin-top: 4px;
+      font-size: 10px;
+      color: #555;
+      text-align: center;
+      border-top: 1px solid #ddd;
+      padding-top: 3px;
     }
 
     @media (orientation: landscape) {
@@ -96,8 +102,8 @@
 
       #informacao {
         bottom: 4px;
-        padding: 5px;
-        font-size: 10px;
+        padding: 6px;
+        font-size: 9.5px;
       }
     }
   </style>
@@ -113,7 +119,6 @@
 
           this.el.setObject3D("mesh", this.grupo);
 
-          // Vaso sanguíneo transparente
           const materialVaso = new THREE.MeshPhongMaterial({
             color: 0xe36a80,
             transparent: true,
@@ -122,17 +127,11 @@
             depthWrite: false
           });
 
-          const geometriaVaso = new THREE.CylinderGeometry(
-            0.22, 0.22, 1.15, 48, 1, true
-          );
-
+          const geometriaVaso = new THREE.CylinderGeometry(0.22, 0.22, 1.15, 48, 1, true);
           geometriaVaso.rotateZ(Math.PI / 2);
 
-          this.grupo.add(
-            new THREE.Mesh(geometriaVaso, materialVaso)
-          );
+          this.grupo.add(new THREE.Mesh(geometriaVaso, materialVaso));
 
-          // Bordas do vaso
           const materialBorda = new THREE.MeshPhongMaterial({
             color: 0xf08ca0
           });
@@ -142,14 +141,11 @@
               new THREE.TorusGeometry(0.22, 0.012, 8, 48),
               materialBorda
             );
-
             anel.rotation.y = Math.PI / 2;
             anel.position.x = x;
-
             this.grupo.add(anel);
           });
 
-          // Formato bicôncavo das hemácias
           const perfil = [
             [0.000,  0.010],
             [0.020,  0.012],
@@ -165,9 +161,7 @@
             [0.000, -0.010]
           ].map(p => new THREE.Vector2(p[0], p[1]));
 
-          const geometriaHemacia = new THREE.LatheGeometry(
-            perfil, 32
-          );
+          const geometriaHemacia = new THREE.LatheGeometry(perfil, 32);
 
           const materialHemacia = new THREE.MeshPhongMaterial({
             color: 0xd31d3c,
@@ -175,13 +169,8 @@
             shininess: 75
           });
 
-          // Criar as 12 hemácias
           for (let i = 0; i < 12; i++) {
-            const celula = new THREE.Mesh(
-              geometriaHemacia,
-              materialHemacia
-            );
-
+            const celula = new THREE.Mesh(geometriaHemacia, materialHemacia);
             const fase = i / 12;
 
             celula.position.set(
@@ -207,7 +196,6 @@
           }
         },
 
-        // Animação das hemácias
         tick: function (tempo, delta) {
           const dt = Math.min(delta || 0, 80) / 1000;
 
@@ -215,12 +203,8 @@
             c.fase = (c.fase + c.velocidade * dt) % 1;
 
             c.objeto.position.x = -0.50 + c.fase;
-
-            c.objeto.position.y =
-              Math.sin(c.indice * 2.1 + c.fase * 5) * 0.07;
-
-            c.objeto.position.z =
-              Math.cos(c.indice * 1.7 + c.fase * 4) * 0.07;
+            c.objeto.position.y = Math.sin(c.indice * 2.1 + c.fase * 5) * 0.07;
+            c.objeto.position.z = Math.cos(c.indice * 1.7 + c.fase * 4) * 0.07;
 
             c.objeto.rotation.z += dt * 0.3;
           });
@@ -237,16 +221,17 @@
   </div>
 
   <div id="status">
-    Iniciando câmera. Aponte para o marcador Hiro.
+    Aponte a câmara para o marcador Hiro (papel ou tela).
   </div>
 
   <div id="informacao">
-    <strong>Fluxo de Hemácias</strong>
-    Observe as células vermelhas transportadoras de oxigênio
-    em movimento no vaso sanguíneo.
+    <strong>Objetivo Educacional</strong>
+    Demonstrar visualmente o transporte de oxigénio através do fluxo de hemácias no interior de um vaso sanguíneo, facilitando o estudo da biologia humana.
+    <div class="tech">
+      <strong>Tecnologias:</strong> HTML5, A-Frame, Three.js e AR.js (WebAR)
+    </div>
   </div>
 
-  <!-- Cena de realidade aumentada -->
   <a-scene
     embedded
     vr-mode-ui="enabled: false"
@@ -254,34 +239,15 @@
     renderer="antialias: true; alpha: true"
     arjs="sourceType: webcam; debugUIEnabled: false;">
 
-    <a-entity
-      light="type: ambient; intensity: 1.5">
-    </a-entity>
+    <a-entity light="type: ambient; intensity: 1.5"></a-entity>
+    <a-entity light="type: directional; intensity: 1" position="1 3 2"></a-entity>
 
-    <a-entity
-      light="type: directional; intensity: 1"
-      position="1 3 2">
-    </a-entity>
-
-    <!-- Marcador Hiro -->
-    <a-marker
-      id="hiro"
-      preset="hiro"
-      emitevents="true">
-
-      <!-- Vaso sanguíneo com hemácias -->
-      <a-entity
-        fluxo-sanguineo
-        position="0 0.2 0"
-        rotation="0 0 0"
-        scale="0.6 0.6 0.6">
-      </a-entity>
-
+    <!-- Marcador Hiro associado ao vaso e animação das hemácias -->
+    <a-marker id="hiro" preset="hiro" emitevents="true">
+      <a-entity fluxo-sanguineo position="0 0.2 0" rotation="0 0 0" scale="0.6 0.6 0.6"></a-entity>
     </a-marker>
 
-    <!-- Câmera -->
     <a-entity camera></a-entity>
-
   </a-scene>
 
   <script>
@@ -289,13 +255,11 @@
     const marcador = document.getElementById("hiro");
 
     marcador.addEventListener("markerFound", function () {
-      statusEl.textContent =
-        "Hiro reconhecido! Observe as hemácias.";
+      statusEl.textContent = "Marcador Hiro reconhecido! O vaso acompanha o movimento.";
     });
 
     marcador.addEventListener("markerLost", function () {
-      statusEl.textContent =
-        "Aponte a câmera para o marcador Hiro.";
+      statusEl.textContent = "Aponte a câmara para o marcador Hiro (papel ou tela).";
     });
 
     window.addEventListener("orientationchange", function () {
@@ -305,12 +269,8 @@
     });
 
     window.addEventListener("error", function (evento) {
-      if (
-        evento.target &&
-        evento.target.tagName === "SCRIPT"
-      ) {
-        statusEl.textContent =
-          "Erro ao carregar biblioteca de RA.";
+      if (evento.target && evento.target.tagName === "SCRIPT") {
+        statusEl.textContent = "Erro ao carregar biblioteca de RA.";
       }
     }, true);
   </script>
